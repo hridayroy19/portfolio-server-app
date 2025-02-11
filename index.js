@@ -24,6 +24,7 @@ async function run() {
 
     const db = client.db("portfolio");
     const collection = db.collection("blog");
+    const message = db.collection("message");
 
     app.post("/api/blog", async (req, res) => {
       const blogData = req.body;
@@ -55,12 +56,59 @@ async function run() {
     });
 
     app.get("/api/blog/:blogId", async (req, res) => {
-      const blogId   = req.params.blogId;
+      const blogId = req.params.blogId;
       const filter = { _id: new ObjectId(blogId) };
       const result = await collection.findOne(filter);
       res.send(result);
     });
 
+    app.delete("/api/blog/:blogId", async (req, res) => {
+      const blogId = req.params.blogId;
+      const filter = { _id: new ObjectId(blogId) };
+
+      try {
+        const result = await collection.findOneAndDelete(filter);
+
+        res
+          .status(200)
+          .json({ success: true, message: "Blog deleted successfully!" });
+      } catch (error) {
+        console.error("Error deleting blog:", error);
+        res
+          .status(500)
+          .json({ success: false, message: "Error deleting blog" });
+      }
+    });
+
+    // message api
+    app.post("/api/message", async (req, res) => {
+      const messageData = req.body;
+      console.log(messageData);
+
+      const result = await message.insertOne(messageData);
+      res.status(201).json({
+        success: true,
+        message: "Message send successfully!",
+        data: result,
+      });
+    });
+
+    app.get("/api/message", async (req, res) => {
+      try {
+        const result = await message.find({}).toArray();
+        res.status(200).json({
+          success: true,
+          message: "message fetched successfully!",
+          data: result,
+        });
+      } catch (error) {
+        console.error("Error fetching message:", error);
+        res.status(500).json({
+          success: false,
+          message: "Error fetching blogs",
+        });
+      }
+    });
 
     // Start the server
     app.listen(port, () => {
