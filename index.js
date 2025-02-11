@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -53,6 +53,14 @@ async function run() {
         });
       }
     });
+
+    app.get("/api/blog/:blogId", async (req, res) => {
+      const blogId   = req.params.blogId;
+      const filter = { _id: new ObjectId(blogId) };
+      const result = await collection.findOne(filter);
+      res.send(result);
+    });
+
 
     // Start the server
     app.listen(port, () => {
